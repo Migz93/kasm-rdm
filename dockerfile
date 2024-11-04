@@ -1,36 +1,80 @@
-ARG BASE_TAG="develop"
-ARG BASE_IMAGE="core-ubuntu-focal"
-FROM kasmweb/$BASE_IMAGE:$BASE_TAG
-USER root
+# syntax=docker/dockerfile:1
 
-ENV HOME /home/kasm-default-profile
-ENV STARTUPDIR /dockerstartup
-ENV INST_SCRIPTS $STARTUPDIR/install
-WORKDIR $HOME
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:debianbookworm
 
-######### Customize Container Here ###########
+# set version label
+ARG BUILD_DATE
+ARG VERSION
+ARG BAMBUSTUDIO_VERSION
+LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
+LABEL maintainer="thelamer"
 
+# title
+ENV TITLE=RemoteDesktopManager \
+    SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 
-COPY ./install/install_rdm.sh $INST_SCRIPTS/rdm/install_rdm.sh
-RUN bash $INST_SCRIPTS/rdm/install_rdm.sh  && rm -rf $INST_SCRIPTS/rdm/
+RUN \
+  echo "**** add icon ****" && \
+  curl -o \
+    /kclient/public/icon.png \
+    https://play-lh.googleusercontent.com/bzUOTb25ewpckkEKt2fuMsWGWrDauo-qQYj5EgSdzHS0MCT1BVNwZ7fIg_0QP0v0sUE && \
+  echo "**** install packages ****" && \
+  apt-get update && \
+  DEBIAN_FRONTEND=noninteractive \
+  apt-get install --no-install-recommends -y \
+    firefox-esr \
+    fonts-dejavu \
+    fonts-dejavu-extra \
+    gstreamer1.0-alsa \
+    gstreamer1.0-gl \
+    gstreamer1.0-gtk3 \
+    gstreamer1.0-libav \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-pulseaudio \
+    gstreamer1.0-qt5 \
+    gstreamer1.0-tools \
+    gstreamer1.0-x \
+    libgstreamer1.0 \
+    libgstreamer-plugins-bad1.0 \
+    libgstreamer-plugins-base1.0 \
+    libosmesa6 \
+    libwebkit2gtk-4.0-37 \
+    libwx-perl && \
+#  echo "**** install bambu studio from appimage ****" && \
+#  if [ -z ${BAMBUSTUDIO_VERSION+x} ]; then \
+#    BAMBUSTUDIO_VERSION=$(curl -sX GET "https://api.github.com/repos/bambulab/BambuStudio/releases/latest" \
+#    | awk '/tag_name/{print $4;exit}' FS='[""]'); \
+#  fi && \
+#  RELEASE_URL=$(curl -sX GET "https://api.github.com/repos/bambulab/BambuStudio/releases/latest"     | awk '/url/{print $4;exit}' FS='[""]') && \
+#  DOWNLOAD_URL=$(curl -sX GET "${RELEASE_URL}" | awk '/browser_download_url.*fedora/{print $4;exit}' FS='[""]') && \
+#  cd /tmp && \
+#  curl -o \
+#    /tmp/bambu.app -L \
+#    "${DOWNLOAD_URL}" && \
+#  chmod +x /tmp/bambu.app && \
+#  ./bambu.app --appimage-extract && \
+#  mv squashfs-root /opt/bambustudio && \
+  cd /tmp && \
+  curl -L -o remotedesktopmanager.deb  "https://cdn.devolutions.net/download/Linux/RDM/2024.3.1.2/RemoteDesktopManager_2024.3.1.2_amd64.deb" \
+  apt-get install -y ./remotedesktopmanager.deb \
+  rm remotedesktopmanager.deb \
+  localedef -i en_GB -f UTF-8 en_GB.UTF-8 && \
+  printf "Linuxserver.io version: ${VERSION}\nBuild-date: ${BUILD_DATE}" > /build_version && \
+  echo "**** cleanup ****" && \
+  apt-get autoclean && \
+  rm -rf \
+    /config/.cache \
+    /config/.launchpadlib \
+    /var/lib/apt/lists/* \
+    /var/tmp/* \
+    /tmp/*
 
-COPY ./install/custom_startup.sh $STARTUPDIR/custom_startup.sh
-RUN chmod +x $STARTUPDIR/custom_startup.sh
-RUN chmod 755 $STARTUPDIR/custom_startup.sh
+# add local files
+COPY /root /
 
-
-# Update the desktop environment to be optimized for a single application
-RUN cp $HOME/.config/xfce4/xfconf/single-application-xfce-perchannel-xml/* $HOME/.config/xfce4/xfconf/xfce-perchannel-xml/
-RUN cp /usr/share/backgrounds/bg_kasm.png /usr/share/backgrounds/bg_default.png
-RUN apt-get remove -y xfce4-panel
-
-
-######### End Customizations ###########
-
-RUN chown 1000:0 $HOME
-
-ENV HOME /home/kasm-user
-WORKDIR $HOME
-RUN mkdir -p $HOME && chown -R 1000:0 $HOME
-
-USER 1000
+# ports and volumes
+EXPOSE 3000
+VOLUME /config

@@ -8,7 +8,7 @@ apt-get install -y ./remotedesktopmanager.deb
 rm remotedesktopmanager.deb
 
 # Desktop file setup
-cp /usr/share/applications/com.devolutionns.remotedesktopmanager.desktop $HOME/Desktop/remotedesktopmanager.desktop
+cp /usr/share/applications/com.devolutions.remotedesktopmanager.desktop $HOME/Desktop/remotedesktopmanager.desktop
 chmod +x $HOME/Desktop/remotedesktopmanager.desktop
 
 # Cleanup

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -ex
 START_COMMAND="/usr/bin/remotedesktopmanager"
-PGREP="Remote Desktop Manager"
+PGREP="RemoteDesktopMa"
 export MAXIMIZE="true"
 export MAXIMIZE_NAME="Remote Desktop Manager"
 MAXIMIZE_SCRIPT=$STARTUPDIR/maximize_window.sh
-DEFAULT_ARGS="--no-sandbox"
+DEFAULT_ARGS=""
 ARGS=${APP_ARGS:-$DEFAULT_ARGS}
 
 options=$(getopt -o gau: -l go,assign,url: -n "$0" -- "$@") || exit

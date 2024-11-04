@@ -1,0 +1,31 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set outputs
+      id: sha
+      run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+    - name: docker login
+      env:
+        DOCKER_USER: ${{secrets.DOCKER_USER}}
+        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+      run: |
+        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+    - name: Build the Docker image
+      run: docker build . --file dockerfile --tag ${{secrets.DOCKER_USER}}/${{ github.event.repository.name }} --tag ${{secrets.DOCKER_USER}}/${{ github.event.repository.name }}:${{ steps.sha.outputs.sha_short }}
+
+    - name: Docker Push SHA
+      run: docker push ${{secrets.DOCKER_USER}}/${{ github.event.repository.name }}:${{ steps.sha.outputs.sha_short }}     
+    - name: Docker Push Main
+      run: docker push ${{secrets.DOCKER_USER}}/${{ github.event.repository.name }}
+

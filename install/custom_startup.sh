@@ -66,7 +66,7 @@ kasm_startup() {
                 /usr/bin/desktop_ready
                 set +e
                 bash ${MAXIMIZE_SCRIPT} &
-                $START_COMMAND $ARGS $URL &
+                $START_COMMAND $ARGS $URL
                 set -e
             fi
             sleep 1

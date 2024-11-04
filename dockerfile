@@ -58,9 +58,9 @@ RUN \
 #  ./bambu.app --appimage-extract && \
 #  mv squashfs-root /opt/bambustudio && \
   cd /tmp && \
-  curl -L -o remotedesktopmanager.deb  "https://cdn.devolutions.net/download/Linux/RDM/2024.3.1.2/RemoteDesktopManager_2024.3.1.2_amd64.deb" \
-  apt-get install -y ./remotedesktopmanager.deb \
-  rm remotedesktopmanager.deb \
+  curl -L -o remotedesktopmanager.deb  "https://cdn.devolutions.net/download/Linux/RDM/2024.3.1.2/RemoteDesktopManager_2024.3.1.2_amd64.deb" && \
+  apt-get install -y ./remotedesktopmanager.deb && \
+  rm remotedesktopmanager.deb && \
   localedef -i en_GB -f UTF-8 en_GB.UTF-8 && \
   printf "Linuxserver.io version: ${VERSION}\nBuild-date: ${BUILD_DATE}" > /build_version && \
   echo "**** cleanup ****" && \
